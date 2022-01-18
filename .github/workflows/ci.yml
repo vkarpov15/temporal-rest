@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  build-lint-test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest] # add windows-latest when supported by SDK
+        node: [16]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node }}
+          # Comment out cache line when testing with act:
+          # (`act --platform ubuntu-latest=lucasalt/act_base:latest`)
+          cache: 'npm'
+      - name: Get Temporal docker-compose.yml
+        run: wget https://raw.githubusercontent.com/temporalio/docker-compose/main/docker-compose.yml
+        # TODO: Test on MacOS once we get docker-compose running on the GH actions Mac instance
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+      - name: Start Temporal Server
+        run: docker-compose up -d
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+      - name: Install sample deps
+        run: npm install
+      - name: Wait for Temporal Server
+        run: node .scripts/wait-on-temporal.js
+        if: ${{ startsWith(matrix.os, 'ubuntu') }}
+      - run: npm test
