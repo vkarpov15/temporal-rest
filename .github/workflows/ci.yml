@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest] # add windows-latest when supported by SDK
+        os: [ubuntu-latest]
         node: [16]
 
     steps:
@@ -21,14 +21,10 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Get Temporal docker-compose.yml
         run: wget https://raw.githubusercontent.com/temporalio/docker-compose/main/docker-compose.yml
-        # TODO: Test on MacOS once we get docker-compose running on the GH actions Mac instance
-        if: ${{ startsWith(matrix.os, 'ubuntu') }}
       - name: Start Temporal Server
         run: docker-compose up -d
-        if: ${{ startsWith(matrix.os, 'ubuntu') }}
-      - name: Install sample deps
+      - name: Install deps
         run: npm install
       - name: Wait for Temporal Server
         run: node .scripts/wait-on-temporal.js
-        if: ${{ startsWith(matrix.os, 'ubuntu') }}
       - run: npm test
