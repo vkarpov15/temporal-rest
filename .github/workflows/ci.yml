@@ -26,5 +26,5 @@ jobs:
       - name: Install deps
         run: npm install
       - name: Wait for Temporal Server
-        run: node .scripts/wait-on-temporal.js
+        run: node .scripts/wait-on-temporal.mjs
       - run: npm test
