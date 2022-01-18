@@ -5,7 +5,7 @@ on:
   push:
 
 jobs:
-  build-lint-test:
+  test:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -15,12 +15,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - name: Setup node
+        uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-          # Comment out cache line when testing with act:
-          # (`act --platform ubuntu-latest=lucasalt/act_base:latest`)
-          cache: 'npm'
       - name: Get Temporal docker-compose.yml
         run: wget https://raw.githubusercontent.com/temporalio/docker-compose/main/docker-compose.yml
         # TODO: Test on MacOS once we get docker-compose running on the GH actions Mac instance
