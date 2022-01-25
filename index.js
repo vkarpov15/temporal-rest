@@ -36,9 +36,9 @@ function createWorkflowEndpoint(router, client, name, fn, taskQueue) {
 }
 
 function createSignalEndpoint(router, client, signal) {
-  router.put(`/signal/${signal.name}/:id`, function(req, res) {
+  router.put(`/signal/${signal.name}/:id`, express.json(), function(req, res) {
     const handle = client.getHandle(req.params.id);
-    handle.signal(signal).
+    handle.signal(signal, req.body).
       then(() => res.json({ ok: 1 })).
       catch(err => res.status(500).json({ message: err.message }));
   });
@@ -48,7 +48,7 @@ function createQueryEndpoint(router, client, query) {
   router.get(`/query/${query.name}/:id`, function(req, res) {
     const handle = client.getHandle(req.params.id);
 
-    handle.query(query).
+    handle.query(query, req.query).
       then(result => res.json({ result })).
       catch(err => res.status(500).json({ message: err.message }));
   });
