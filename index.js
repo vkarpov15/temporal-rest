@@ -3,7 +3,7 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 
-module.exports = function createExpressMiddleware(workflows, client, taskQueue) {
+exports.createExpressMiddleware = function createExpressMiddleware(workflows, client, taskQueue) {
   const router = express.Router();
   
   for (const [key, value] of Object.entries(workflows)) {

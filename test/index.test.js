@@ -4,7 +4,7 @@ const { Core, DefaultLogger, Worker } = require('@temporalio/worker');
 const { WorkflowClient } = require('@temporalio/client');
 const assert = require('assert');
 const axios = require('axios');
-const createExpressMiddleware = require('../');
+const { createExpressMiddleware } = require('../');
 const express = require('express');
 const workflows = require('./workflows/signals-queries');
 
