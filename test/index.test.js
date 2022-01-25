@@ -100,23 +100,41 @@ describe('createExpressMiddleware', function() {
       await server.close();
     });
   
-    it('can query and signal the workflow', async function() {
-      this.timeout(10000);
+    it('can pass args to signals in request body', async function() {
       let res = await apiClient.post('/workflow/countdownWorkflow');
       const { workflowId } = res.data;
   
       assert.ok(workflowId);
 
       res = await apiClient.get(`/query/timeLeft/${workflowId}`);
-      assert.equal(typeof res.data.result, 'number');
-      assert.ok(res.data.result > 0 && res.data.result <= 1500, res.data.result);
+      assert.strictEqual(res.data.result, 1500);
 
       res = await apiClient.put(`/signal/setDeadline/${workflowId}`, { deadline: Date.now() + 3000 });
       assert.ok(res.data.ok);
       
       res = await apiClient.get(`/query/timeLeft/${workflowId}`);
       assert.equal(typeof res.data.result, 'number');
-      assert.ok(res.data.result > 1500 && res.data.result <= 3000, res.data.result);
+      assert.ok(res.data.result >= 1500 && res.data.result <= 3000, res.data.result);
+    });
+
+    it('can pass args to workflows in request body', async function() {
+      let res = await apiClient.post('/workflow/countdownWorkflow', { delay: 3000 });
+      const { workflowId } = res.data;
+  
+      assert.ok(workflowId);
+
+      res = await apiClient.get(`/query/timeLeft/${workflowId}`);
+      assert.strictEqual(res.data.result, 3000);
+    });
+
+    it('can pass args to queries in query string', async function() {
+      let res = await apiClient.post('/workflow/countdownWorkflow');
+      const { workflowId } = res.data;
+  
+      assert.ok(workflowId);
+
+      res = await apiClient.get(`/query/timeLeft/${workflowId}?seconds=true`);
+      assert.strictEqual(res.data.result, 1);
     });
   });
 });

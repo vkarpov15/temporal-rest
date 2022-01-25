@@ -25,11 +25,12 @@ exports.createExpressMiddleware = function createExpressMiddleware(workflows, cl
 }
 
 function createWorkflowEndpoint(router, client, name, fn, taskQueue) {
-  router.post(`/workflow/${name}`, function(req, res) {
+  router.post(`/workflow/${name}`, express.json(), function(req, res) {
     const workflowId = uuidv4();
     const opts = {
       taskQueue,
-      workflowId
+      workflowId,
+      args: [req.body]
     };
     client.start(fn, opts).then(() => res.json({ workflowId }));
   });
