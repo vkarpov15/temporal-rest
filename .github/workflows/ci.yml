@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Get Temporal docker-compose.yml
-        run: wget https://raw.githubusercontent.com/temporalio/docker-compose/main/docker-compose.yml
+        run: wget https://raw.githubusercontent.com/temporalio/docker-compose/v1.12.0/docker-compose.yml
       - name: Start Temporal Server
         run: docker-compose up -d
       - name: Install deps
