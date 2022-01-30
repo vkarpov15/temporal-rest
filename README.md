@@ -54,10 +54,10 @@ Note that temporal-rest _only_ registers endpoints for exported Signals and Quer
 If you want to register an endpoint for a Signal or Query, make sure you export it from `workflows.ts` / `workflows.js`:
 
 ```javascript
-// Temporal-rest will create a `PUT /signal/unblock/:id` endpoint
+// Temporal-rest will create a `PUT /signal/unblock/:workflowId` endpoint
 exports.unblockSignal = wf.defineSignal('unblock');
 
-// Temporal-rest will NOT create a `PUT /signal/otherSignal/:id` endpoint,
+// Temporal-rest will NOT create a `PUT /signal/otherSignal/:workflowId` endpoint,
 // because this Signal isn't exported.
 const otherSignal = wf.defineSignal('otherSignal');
 ```
@@ -84,7 +84,7 @@ exports.countdownWorkflow = async function countdownWorkflow({ delay }) {
     deadline = data.deadline;
   });
   setHandler(exports.timeLeftQuery, (data) => {
-    if (data.seconds) {
+    if (data.seconds === 'true') {
       return Math.floor((deadline - Date.now()) / 1000);
     }
     return deadline - Date.now();
@@ -110,7 +110,7 @@ curl -X PUT http://localhost:3000/signal/setDeadline -d '{"deadline": 3000}'
 ```
 
 For Queries, temporal-rest passes `req.query` as the first argument.
-For example, the below CURL command calls `timeLeftQuery` with `seconds = 'true'`
+For example, the below CURL command calls `timeLeftQuery({ seconds: 'true' })`:
 
 ```
 curl http://localhost:3000/query/timeLeft?seconds=true
