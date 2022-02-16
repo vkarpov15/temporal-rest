@@ -1,24 +1,28 @@
-'use strict';
+import { Core, DefaultLogger, Worker } from '@temporalio/worker';
+import { Server } from 'http';
+import { WorkflowClient } from '@temporalio/client';
+import assert from 'assert';
+import axios, { Axios } from 'axios';
+import { before, describe, it } from 'mocha';
+import { createExpressMiddleware } from '../';
+import express from 'express';
+import * as wf from '@temporalio/workflow';
 
-const { Core, DefaultLogger, Worker } = require('@temporalio/worker');
-const { WorkflowClient } = require('@temporalio/client');
-const assert = require('assert');
-const axios = require('axios');
-const { createExpressMiddleware } = require('../');
-const express = require('express');
+import * as signalsQueries from './workflows/signals-queries';
+import * as timer from './workflows/timer';
 
 describe('createExpressMiddleware', function() {
-  let server;
-  let worker;
-  let client;
-  let apiClient;
-  let runPromise;
-  let workflows;
+  let server: Server;
+  let worker: Worker;
+  let client: WorkflowClient;
+  let apiClient: Axios;
+  let runPromise: Promise<any>;
+  let workflows: any;
 
   describe('using signals-queries', function() {
     before(async function() {
       this.timeout(10000);
-      workflows = require('./workflows/signals-queries');
+      workflows = signalsQueries;
   
       // Suppress default log output to avoid logger polluting test output
       await Core.install({ logger: new DefaultLogger('ERROR') });
@@ -72,7 +76,7 @@ describe('createExpressMiddleware', function() {
   describe('using timer', function() {
     before(async function() {
       this.timeout(10000);
-      workflows = require('./workflows/timer');
+      workflows = timer;
   
       // Suppress default log output to avoid logger polluting test output
       await Core.install({ logger: new DefaultLogger('ERROR') });
