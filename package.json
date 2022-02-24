@@ -3,6 +3,14 @@
   "version": "0.2.0",
   "private": false,
   "main": "lib/index.js",
+  "bugs": {
+    "url": "https://github.com/vkarpov15/temporal-rest/issues/new"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/vkarpov15/temporal-rest.git"
+  },
+  "homepage": "https://github.com/vkarpov15/temporal-rest",
   "scripts": {
     "build": "tsc --build",
     "build.watch": "tsc --build --watch",
