@@ -45,7 +45,7 @@ const app = express();
 // Router has the below endpoints:
 // - POST /workflow/unblockOrCancel
 // - PUT /signal/unblock
-// - GET /query/is-blocked
+// - GET /query/isBlocked
 const router = createExpressMiddleware(workflows, new WorkflowClient(), 'my-task-queue');
 app.use(router);
 ```
