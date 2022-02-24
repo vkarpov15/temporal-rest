@@ -1,11 +1,9 @@
-'use strict';
-
-const { defineSignal, defineQuery, setHandler, condition } = require('@temporalio/workflow');
+import { defineSignal, defineQuery, setHandler, condition } from '@temporalio/workflow';
 
 exports.setDeadlineSignal = defineSignal('setDeadline');
 exports.timeLeftQuery = defineQuery('timeLeft');
 
-exports.countdownWorkflow = async function countdownWorkflow({ delay }) {
+exports.countdownWorkflow = async function countdownWorkflow({ delay }: { delay: number }) {
   delay = delay == null ? 1500 : delay;
   let deadline = Date.now() + delay;
   

@@ -1,6 +1,4 @@
-'use strict';
-
-const wf = require('@temporalio/workflow');
+import * as wf from '@temporalio/workflow';
 
 exports.unblockSignal = wf.defineSignal('unblock');
 exports.isBlockedQuery = wf.defineQuery('isBlocked');
