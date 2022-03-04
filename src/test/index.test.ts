@@ -114,7 +114,7 @@ describe('createExpressMiddleware', function() {
       assert.strictEqual(res.data.result, 1500);
 
       res = await apiClient.put(`/signal/setDeadline/${workflowId}`, { deadline: Date.now() + 3000 });
-      assert.ok(res.data.ok);
+      assert.ok(res.data.received);
       
       res = await apiClient.get(`/query/timeLeft/${workflowId}`);
       assert.equal(typeof res.data.result, 'number');
