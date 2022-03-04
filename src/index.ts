@@ -41,7 +41,7 @@ function createSignalEndpoint(router: express.Router, client: WorkflowClient, si
   router.put(`/signal/${signal.name}/:id`, express.json(), function(req: express.Request, res: express.Response) {
     const handle = client.getHandle(req.params.id);
     handle.signal(signal, req.body).
-      then(() => res.json({ ok: 1 })).
+      then(() => res.json({ received: true })).
       catch(err => res.status(500).json({ message: err.message }));
   });
 }
