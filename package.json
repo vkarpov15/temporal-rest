@@ -1,6 +1,6 @@
 {
   "name": "temporal-rest",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": false,
   "main": "lib/index.js",
   "bugs": {
