@@ -3,6 +3,12 @@ import { QueryDefinition, SignalDefinition, Workflow } from '@temporalio/common'
 import express from 'express';
 import { v4 } from 'uuid';
 
+const signalValidators = new WeakMap<SignalDefinition, Function>();
+
+export function useValidator(signal: SignalDefinition, fn: Function): void {
+  signalValidators.set(signal, fn);
+}
+
 export function createExpressMiddleware(workflows: any, client: WorkflowClient, taskQueue: string) {
   const router = express.Router();
   
@@ -39,6 +45,13 @@ function createWorkflowEndpoint(router: express.Router, client: WorkflowClient, 
 
 function createSignalEndpoint(router: express.Router, client: WorkflowClient, signal: SignalDefinition<any[]>) {
   router.put(`/signal/${signal.name}/:id`, express.json(), function(req: express.Request, res: express.Response) {
+    let data = req.body;
+
+    let fn: Function | undefined = signalValidators.get(signal);
+    if (fn != null) {
+      data = fn(data);
+    }
+    
     const handle = client.getHandle(req.params.id);
     handle.signal(signal, req.body).
       then(() => res.json({ received: true })).
