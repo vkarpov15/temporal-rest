@@ -18,6 +18,7 @@ describe('createExpressMiddleware', function() {
   let apiClient: Axios;
   let runPromise: Promise<any>;
   let workflows: any;
+  const taskQueue = 'temporal-rest-test';
 
   describe('using signals-queries', function() {
     before(async function() {
@@ -27,7 +28,6 @@ describe('createExpressMiddleware', function() {
       // Suppress default log output to avoid logger polluting test output
       await Core.install({ logger: new DefaultLogger('ERROR') });
   
-      const taskQueue = 'temporal-rest-test';
       worker = await Worker.create({
         workflowsPath: require.resolve('./workflows/signals-queries'),
         taskQueue
@@ -72,6 +72,55 @@ describe('createExpressMiddleware', function() {
       assert.strictEqual(res.data.result, false);
     });
   });
+
+  describe('using custom router', function() {
+    let router: express.Router;
+    let app: express.Application;
+
+    before(async function() {
+      this.timeout(10000);
+      workflows = signalsQueries;
+  
+      // Suppress default log output to avoid logger polluting test output
+      await Core.install({ logger: new DefaultLogger('ERROR') });
+  
+      
+      worker = await Worker.create({
+        workflowsPath: require.resolve('./workflows/timer'),
+        taskQueue
+      });
+  
+      runPromise = worker.run();
+  
+      client = new WorkflowClient();
+  
+      apiClient = axios.create({ baseURL: 'http://localhost:3001' });
+    });
+  
+    after(async function() {
+      worker.shutdown();
+      await runPromise;
+      await server.close();
+    });
+
+    it('allows registering middleware', async function() {
+      this.timeout(10000);
+
+      app = express();
+      let count = 0;
+      router = express.Router();
+      router.use('/workflow/unblockOrCancel', (_req, _res, next) => {
+        ++count;
+        next();
+      });
+
+      app.use(createExpressMiddleware(workflows, client, taskQueue, router));
+      server = await app.listen(3001);
+
+      await apiClient.post('/workflow/unblockOrCancel');
+      assert.strictEqual(count, 1);
+    });
+  });
   
   describe('using timer', function() {
     before(async function() {
@@ -81,7 +130,6 @@ describe('createExpressMiddleware', function() {
       // Suppress default log output to avoid logger polluting test output
       await Core.install({ logger: new DefaultLogger('ERROR') });
   
-      const taskQueue = 'temporal-rest-test';
       worker = await Worker.create({
         workflowsPath: require.resolve('./workflows/timer'),
         taskQueue
