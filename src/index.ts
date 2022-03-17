@@ -1,6 +1,6 @@
 import { WorkflowClient } from '@temporalio/client';
 import { QueryDefinition, SignalDefinition, Workflow } from '@temporalio/common';
-import express from 'express';
+import express, { Router } from 'express';
 import { v4 } from 'uuid';
 
 const signalValidators = new WeakMap<SignalDefinition, Function>();
@@ -9,8 +9,10 @@ export function useValidator(signal: SignalDefinition, fn: Function): void {
   signalValidators.set(signal, fn);
 }
 
-export function createExpressMiddleware(workflows: any, client: WorkflowClient, taskQueue: string) {
-  const router = express.Router();
+export function createExpressMiddleware(workflows: any, client: WorkflowClient, taskQueue: string, router?: Router) {
+  if (router === undefined) {
+    router = Router();
+  }
   
   for (const key of Object.keys(workflows)) {
     const value: any = workflows[key];
@@ -31,7 +33,7 @@ export function createExpressMiddleware(workflows: any, client: WorkflowClient, 
   return router;
 }
 
-function createWorkflowEndpoint(router: express.Router, client: WorkflowClient, name: string, fn: Workflow, taskQueue: string) {
+function createWorkflowEndpoint(router: Router, client: WorkflowClient, name: string, fn: Workflow, taskQueue: string) {
   router.post(`/workflow/${name}`, express.json(), function(req: express.Request, res: express.Response) {
     const workflowId = v4();
     const opts = {
@@ -43,7 +45,7 @@ function createWorkflowEndpoint(router: express.Router, client: WorkflowClient, 
   });
 }
 
-function createSignalEndpoint(router: express.Router, client: WorkflowClient, signal: SignalDefinition<any[]>) {
+function createSignalEndpoint(router: Router, client: WorkflowClient, signal: SignalDefinition<any[]>) {
   router.put(`/signal/${signal.name}/:id`, express.json(), function(req: express.Request, res: express.Response) {
     let data = req.body;
 
@@ -59,7 +61,7 @@ function createSignalEndpoint(router: express.Router, client: WorkflowClient, si
   });
 }
 
-function createQueryEndpoint(router: express.Router, client: WorkflowClient, query: QueryDefinition<any, any[]>) {
+function createQueryEndpoint(router: Router, client: WorkflowClient, query: QueryDefinition<any, any[]>) {
   router.get(`/query/${query.name}/:id`, function(req, res) {
     const handle = client.getHandle(req.params.id);
 
