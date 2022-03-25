@@ -56,7 +56,7 @@ function createWorkflowEndpoint(router: Router, client: WorkflowClient, name: st
 }
 
 function createSignalEndpoint(router: Router, client: WorkflowClient, signal: SignalDefinition<any[]>) {
-  router.put(`/signal/${signal.name}/:id`, express.json(), function(req: express.Request, res: express.Response) {
+  router.put(`/signal/${signal.name}/:workflowId`, express.json(), function(req: express.Request, res: express.Response) {
     let data = req.body;
 
     let fn: Function | undefined = signalValidators.get(signal);
@@ -64,7 +64,7 @@ function createSignalEndpoint(router: Router, client: WorkflowClient, signal: Si
       data = fn(data);
     }
     
-    const handle = client.getHandle(req.params.id);
+    const handle = client.getHandle(req.params.workflowId);
     handle.signal(signal, req.body).
       then(() => res.json({ received: true })).
       catch(err => res.status(500).json({ message: err.message }));
@@ -72,8 +72,8 @@ function createSignalEndpoint(router: Router, client: WorkflowClient, signal: Si
 }
 
 function createQueryEndpoint(router: Router, client: WorkflowClient, query: QueryDefinition<any, any[]>) {
-  router.get(`/query/${query.name}/:id`, function(req, res) {
-    const handle = client.getHandle(req.params.id);
+  router.get(`/query/${query.name}/:workflowId`, function(req, res) {
+    const handle = client.getHandle(req.params.workflowId);
 
     handle.query(query, req.query).
       then(result => res.json({ result })).
