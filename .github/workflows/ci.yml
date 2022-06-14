@@ -19,14 +19,8 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - name: Get Temporal docker-compose.yml
-        run: wget https://raw.githubusercontent.com/temporalio/docker-compose/v1.12.0/docker-compose.yml
-      - name: Start Temporal Server
-        run: docker-compose up -d
       - name: Install deps
         run: npm install
-      - name: Wait for Temporal Server
-        run: node .scripts/wait-on-temporal.mjs
       - name: Build
         run: npm run build
       - run: npm test

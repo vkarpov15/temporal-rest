@@ -1,12 +1,12 @@
-import { Core, DefaultLogger, Worker } from '@temporalio/worker';
+import { Runtime, DefaultLogger, Worker } from '@temporalio/worker';
 import { Server } from 'http';
+import { TestWorkflowEnvironment } from '@temporalio/testing';
 import { WorkflowClient } from '@temporalio/client';
 import assert from 'assert';
 import axios, { Axios } from 'axios';
 import { before, describe, it } from 'mocha';
 import { createExpressMiddleware } from '../';
 import express from 'express';
-import * as wf from '@temporalio/workflow';
 
 import * as signalsQueries from './workflows/signals-queries';
 import * as timer from './workflows/timer';
@@ -18,6 +18,7 @@ describe('createExpressMiddleware', function() {
   let apiClient: Axios;
   let runPromise: Promise<any>;
   let workflows: any;
+  let env: TestWorkflowEnvironment;
   const taskQueue = 'temporal-rest-test';
 
   describe('using signals-queries', function() {
@@ -26,16 +27,19 @@ describe('createExpressMiddleware', function() {
       workflows = signalsQueries;
   
       // Suppress default log output to avoid logger polluting test output
-      await Core.install({ logger: new DefaultLogger('ERROR') });
+      Runtime.install({ logger: new DefaultLogger('WARN') });
+
+      env = await TestWorkflowEnvironment.create();
   
       worker = await Worker.create({
+        connection: env.nativeConnection,
         workflowsPath: require.resolve('./workflows/signals-queries'),
         taskQueue
       });
   
       runPromise = worker.run();
   
-      client = new WorkflowClient();
+      client = env.workflowClient;
   
       const app = express();
       app.use(createExpressMiddleware(workflows, client, taskQueue));
@@ -48,6 +52,9 @@ describe('createExpressMiddleware', function() {
       worker.shutdown();
       await runPromise;
       await server.close();
+
+      await env.nativeConnection.close();
+      await env.teardown();
     });
   
     it('allows creating workflows', async function() {
@@ -82,17 +89,19 @@ describe('createExpressMiddleware', function() {
       workflows = signalsQueries;
   
       // Suppress default log output to avoid logger polluting test output
-      await Core.install({ logger: new DefaultLogger('ERROR') });
-  
+      Runtime.install({ logger: new DefaultLogger('WARN') });
+
+      env = await TestWorkflowEnvironment.create();
       
       worker = await Worker.create({
+        connection: env.nativeConnection,
         workflowsPath: require.resolve('./workflows/timer'),
         taskQueue
       });
   
       runPromise = worker.run();
   
-      client = new WorkflowClient();
+      client = env.workflowClient;
   
       apiClient = axios.create({ baseURL: 'http://localhost:3001' });
     });
@@ -101,6 +110,9 @@ describe('createExpressMiddleware', function() {
       worker.shutdown();
       await runPromise;
       await server.close();
+
+      await env.nativeConnection.close();
+      await env.teardown();
     });
 
     it('allows registering middleware', async function() {
@@ -128,16 +140,19 @@ describe('createExpressMiddleware', function() {
       workflows = timer;
   
       // Suppress default log output to avoid logger polluting test output
-      await Core.install({ logger: new DefaultLogger('ERROR') });
+      Runtime.install({ logger: new DefaultLogger('WARN') });
+
+      env = await TestWorkflowEnvironment.create();
   
       worker = await Worker.create({
+        connection: env.nativeConnection,
         workflowsPath: require.resolve('./workflows/timer'),
         taskQueue
       });
   
       runPromise = worker.run();
   
-      client = new WorkflowClient();
+      client = env.workflowClient;
   
       const app = express();
       app.use(createExpressMiddleware(workflows, client, taskQueue));
@@ -150,6 +165,9 @@ describe('createExpressMiddleware', function() {
       worker.shutdown();
       await runPromise;
       await server.close();
+
+      await env.nativeConnection.close();
+      await env.teardown();
     });
   
     it('can pass args to signals in request body', async function() {
@@ -159,7 +177,7 @@ describe('createExpressMiddleware', function() {
       assert.ok(workflowId);
 
       res = await apiClient.get(`/query/timeLeft/${workflowId}`);
-      assert.strictEqual(res.data.result, 1500);
+      assert.ok(res.data.result >= 1000 && res.data.result <= 1500, res.data.result);
 
       res = await apiClient.put(`/signal/setDeadline/${workflowId}`, { deadline: Date.now() + 3000 });
       assert.ok(res.data.received);
@@ -176,7 +194,7 @@ describe('createExpressMiddleware', function() {
       assert.ok(workflowId);
 
       res = await apiClient.get(`/query/timeLeft/${workflowId}`);
-      assert.strictEqual(res.data.result, 3000);
+      assert.ok(res.data.result >= 2500 && res.data.result <= 3000);
     });
 
     it('can pass args to queries in query string', async function() {
