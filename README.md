@@ -62,6 +62,19 @@ exports.unblockSignal = wf.defineSignal('unblock');
 const otherSignal = wf.defineSignal('otherSignal');
 ```
 
+temporal-rest adds the below endpoints for every exported Workflow:
+
+- `POST /workflow/<workflowName>`: create a new instance of the given Workflow. Use [uuid](https://npmjs.com/package/uuid) to generate the Workflow id
+- `POST /workflow/<workflowName>/:workflowId`: create a new instance of the given Workflow with the given Workflow id
+
+temporal-rest adds the below endpoints for every exported Query:
+
+- `GET /query/<queryName>/:workflowId`: execute the Query with the given name against the given Workflow id
+
+temporal-rest adds the below endpoints for every exported Signal:
+
+- `PUT /signal/<signalName>/:workflowId`: execute the Signal with the given name against the given Workflow id
+
 ## Passing Arguments
 
 For Signals and Workflows, temporal-rest passes the HTTP request body as the first parameter to the Signal or Workflow.

@@ -187,6 +187,14 @@ describe('createExpressMiddleware', function() {
       assert.ok(res.data.result >= 1500 && res.data.result <= 3000, res.data.result);
     });
 
+    it('can create workflow with a custom id', async function() {
+      const customWorkflowId = 'test' + Date.now();
+      let res = await apiClient.post('/workflow/countdownWorkflow/' + customWorkflowId);
+      const { workflowId } = res.data;
+  
+      assert.equal(workflowId, customWorkflowId);
+    });
+
     it('can pass args to workflows in request body', async function() {
       let res = await apiClient.post('/workflow/countdownWorkflow', { delay: 3000 });
       const { workflowId } = res.data;
