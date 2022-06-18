@@ -24,7 +24,7 @@
   "peerDependencies": {
     "@types/express": "4.x",
     "express": "4.x",
-    "temporalio": ">= 0.17.0"
+    "temporalio": ">= 0.17.0 || 1.0.0-rc.0"
   },
   "devDependencies": {
     "@temporalio/testing": "0.23.x",
