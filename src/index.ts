@@ -53,6 +53,12 @@ function createWorkflowEndpoint(router: Router, client: WorkflowClient, name: st
     };
     client.start(fn, opts).then(() => res.json({ workflowId }));
   });
+
+  router.post(`/workflow/${name}/:workflowId/cancel`, express.json(), function(req: express.Request, res: express.Response) {
+    const workflowId = req.params.workflowId;
+    const handle = client.getHandle(workflowId);
+    handle.cancel().then(() => res.json({ workflowId }));
+  });
 }
 
 function createSignalEndpoint(router: Router, client: WorkflowClient, signal: SignalDefinition<any[]>) {
