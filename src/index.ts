@@ -56,7 +56,7 @@ function createWorkflowEndpoint(router: Router, client: WorkflowClient, name: st
 
   router.post(`/workflow/${name}/:workflowId/cancel`, express.json(), function(req: express.Request, res: express.Response) {
     const workflowId = req.params.workflowId;
-    const handle = client.workflow.getHandle(workflowId);
+    const handle = client.getHandle(workflowId);
     handle.cancel(workflowId).then(() => res.json({ workflowId }));
   });
 }
